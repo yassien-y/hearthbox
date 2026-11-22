@@ -8,7 +8,7 @@
 # date with hearthbox pull and hearthbox update, which need no root.
 #
 # Run it from curl, which clones the repo itself:
-#   sudo bash -c "$(curl -fsSL <raw url of install.sh>)"
+#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/yassien-y/hearthbox/master/install.sh)"
 # or from a clone of the repo: sudo ./install.sh
 #
 # Each step runs as the rootless Hearthbox user, unless its script has a "# Runs as: root" line.
@@ -21,7 +21,7 @@ fi
 set -e
 
 # Where a run from curl clones the repo from. A fork sets its own URL here.
-repo_url="<repo-url>"
+repo_url="https://github.com/yassien-y/hearthbox"
 
 [ "$(id -u)" -eq 0 ] || { echo "Run as root, with sudo."; exit 1; }
 # Asks questions, so input must be a terminal: without one, the first read would end the

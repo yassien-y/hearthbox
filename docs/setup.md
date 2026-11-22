@@ -66,7 +66,7 @@ sudo pacman -S --needed podman git nftables curl     # Arch
 Run this:
 
 ```bash
-sudo bash -c "$(curl -fsSL <install-url>)"   # not available yet: the repo has no public URL
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/yassien-y/hearthbox/master/install.sh)"
 ```
 
 This downloads Install and runs it. Install downloads the rest of the setup itself,
