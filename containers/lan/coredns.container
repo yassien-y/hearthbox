@@ -1,0 +1,26 @@
+[Unit]
+Description=CoreDNS, the LAN's DNS server: answers <service>.<internal-domain> with this server
+
+[Container]
+Image=docker.io/coredns/coredns:1.15.0
+
+# The image looks for /Corefile: point it at the mounted one
+Exec=-conf /etc/coredns/Corefile
+
+# Rootless, it can't bind port 53: Install's nftables rules redirect 53 here, and drop
+# 1053 traffic that wasn't redirected
+PublishPort=1053:1053/udp
+PublishPort=1053:1053/tcp
+
+Volume=%h/repo/config/coredns/config:/etc/coredns:ro,Z
+
+# The internal domain the Corefile answers for, as {$INTERNAL_DOMAIN}: systemd fills it in from
+# ~/appdata/.env
+Environment=INTERNAL_DOMAIN=${INTERNAL_DOMAIN}
+
+# LAN_IP and DNS_UPSTREAM, written by find-lan.sh (below) and read by Podman when the
+# container starts; the Corefile reads them as {$LAN_IP} and {$DNS_UPSTREAM}
+EnvironmentFile=%t/hearthbox/lan.env
+
+[Service]
+ExecStartPre=/bin/sh %h/repo/scripts/containers/find-lan.sh

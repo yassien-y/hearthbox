@@ -1,0 +1,26 @@
+[Unit]
+Description=NetBird dashboard: users, devices and access rules, for NetBird devices only
+
+[Container]
+# The version NetBird's release notes pair with netbird-server 0.83 ("Dashboard
+# (v2.97.0)"). The rootless build: it listens on 8080, with no HTTPS of its own, since
+# nginx serves it at https://netbird.<internal-domain>.
+Image=docker.io/netbirdio/dashboard:v2.97.0-rootless
+Network=web.network
+
+# The browser calls NetBird's API and logs in at NetBird's server, at its public address:
+# the dashboard's pages only come from here
+Environment=NETBIRD_MGMT_API_ENDPOINT=https://nbs.${PUBLIC_DOMAIN}
+Environment=AUTH_AUTHORITY=https://nbs.${PUBLIC_DOMAIN}/oauth2
+# The address its "add a device" instructions tell the NetBird app to connect to
+Environment=NETBIRD_MGMT_GRPC_API_ENDPOINT=https://nbs.${PUBLIC_DOMAIN}
+# NetBird's own login, not Auth0, with the client NetBird's server registers for the
+# dashboard (management/server/idp/embedded.go), which accepts only this audience
+Environment=USE_AUTH0=false
+Environment=AUTH_CLIENT_ID=netbird-dashboard
+Environment=AUTH_AUDIENCE=netbird-dashboard
+Environment="AUTH_SUPPORTED_SCOPES=openid profile email groups"
+# Where NetBird's login sends the browser back to: the addresses config/netbird/config.yaml
+# lists (dashboardRedirectURIs) end in these
+Environment=AUTH_REDIRECT_URI=/nb-auth
+Environment=AUTH_SILENT_REDIRECT_URI=/nb-silent-auth

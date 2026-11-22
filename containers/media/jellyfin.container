@@ -1,0 +1,10 @@
+[Unit]
+Description=Jellyfin media server
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:12
+Network=web.network
+Volume=%h/appdata/jellyfin/config:/config:Z
+Volume=%h/appdata/jellyfin/cache:/cache:Z
+Volume=/srv/hearthbox/media:/media:ro
+

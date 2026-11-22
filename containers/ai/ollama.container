@@ -1,0 +1,13 @@
+[Unit]
+Description=Ollama AI models server
+
+[Container]
+# No major-version tag, only exact versions
+Image=docker.io/ollama/ollama:0.40.13
+Network=web.network
+# The port nginx's sites.conf uses
+Environment=OLLAMA_HOST=0.0.0.0:8099
+# It keeps its models and key in $HOME/.ollama. The image's home is its own user's,
+# which the container's user isn't, so it gets one that's mounted.
+Environment=HOME=/ollama
+Volume=%h/appdata/ollama:/ollama/.ollama:Z

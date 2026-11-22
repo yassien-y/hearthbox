@@ -1,0 +1,22 @@
+# Port 1053, not 53: CoreDNS runs rootless, so nftables redirects port 53 here.
+# {$LAN_IP} and {$DNS_UPSTREAM} are found at every start
+# (scripts/containers/find-lan.sh), and {$INTERNAL_DOMAIN} comes from ~/appdata/.env
+# (lan/coredns.container).
+
+# The internal domain and every name under it (jellyfin.<internal-domain>,
+# home.<internal-domain>, ...) is this machine
+{$INTERNAL_DOMAIN}:1053 {
+    template IN A {
+        answer "{{ .Name }} 60 IN A {$LAN_IP}"
+    }
+    # Other record types (AAAA, ...): "no such record", so devices use the A record at
+    # once instead of waiting
+    template ANY ANY {
+        rcode NOERROR
+    }
+}
+
+# Every other name goes where it went before: the router
+.:1053 {
+    forward . {$DNS_UPSTREAM}
+}

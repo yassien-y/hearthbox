@@ -1,0 +1,4 @@
+[Network]
+NetworkName=immich
+# Immich's own: its database, Valkey and machine learning are reachable only by its
+# server, which is also on web.network for nginx

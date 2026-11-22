@@ -1,0 +1,23 @@
+[Unit]
+Description=Immich photos server
+# It fails to start without its database and Valkey. Starting Postgres first also
+# creates the database password (immich-postgres.container).
+Wants=immich-postgres.service immich-redis.service
+After=immich-postgres.service immich-redis.service
+
+[Container]
+Image=ghcr.io/immich-app/immich-server:v3
+Network=web.network
+Network=immich.network
+# The port nginx's sites.conf and Glance use
+Environment=IMMICH_PORT=8098
+# Its containers on immich.network, by name. Machine learning's default address,
+# http://immich-machine-learning:3003, already is its container.
+Environment=DB_HOSTNAME=immich-postgres
+Environment=REDIS_HOSTNAME=immich-redis
+Secret=immich-db-password,type=env,target=DB_PASSWORD
+# Uploads, the library and thumbnails: with the other shared files, which Uninstall keeps
+Volume=/srv/hearthbox/photos:/data
+
+# The dashboard groups Immich's other containers under this one
+Label=glance.id=immich

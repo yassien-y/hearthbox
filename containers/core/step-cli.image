@@ -1,0 +1,6 @@
+# smallstep's step CLI, which scripts/containers/step.sh runs for this host's certificate
+# authority. No service uses it, so it's an .image unit: pull-images downloads it with
+# the services' images, before nginx's start needs it, and step.sh reads the version
+# from here.
+[Image]
+Image=docker.io/smallstep/step-cli:0.31.0

@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Utilities and helper commands to manage the setup, as the rootless user: updating
+# it and checking on its services. install.sh sets it up the first time.
+set -e
+
+# The services this host should run: one per linked .container file, so one that never
+# started is listed too, not only what's running
+services() {
+    find -L "$HOME/.config/containers/systemd" -name '*.container' -printf '%f\n' |
+        sed 's/\.container$//' | sort
+}
+
+# Stops unless $1 is one of this host's services: a typo gets the list instead of
+# systemd's "not found", and other units of the user (podman.socket) are left alone
+check_service() {
+    [ -n "$1" ] || { echo "Name a service. This host's services:"; services; exit 1; }
+    services | grep -qx "$1" ||
+        { echo "No service named '$1'. This host's services:"; services; exit 1; }
+}
+
+case "$1" in
+    pull)
+        # A clone Install copied from a folder without one has nowhere to pull from
+        git -C "$HOME/repo" remote get-url origin > /dev/null 2>&1 ||
+            { echo "No git remote in ~/repo to pull from: add one with git -C ~/repo remote add origin <url>."; exit 1; }
+        # --ff-only: a clone with its own commits stops here instead of being merged,
+        # since merging and conflicts are for whoever made those commits, with git
+        git -C "$HOME/repo" pull --ff-only
+        REPO="$HOME/repo" bash "$HOME/repo/scripts/update.sh"
+        ;;
+    update)
+        REPO="$HOME/repo" bash "$HOME/repo/scripts/update.sh"
+        ;;
+    services)
+        case "$2" in
+            list)
+                services | while read -r service; do
+                    # is-active exits non-zero for every state but active
+                    state="$(systemctl --user is-active "$service")" || true
+                    printf '%-14s %s\n' "$service" "$state"
+                done
+                ;;
+            status)
+                check_service "$3"
+                systemctl --user status "$3"
+                ;;
+            logs)
+                check_service "$3"
+                # Each container is a user service, and its output goes to the journal.
+                # Options after the name go to journalctl: -f to follow, -b, -n 100, ...
+                journalctl --user -u "$3" "${@:4}"
+                ;;
+            restart)
+                # All of them: the same step hearthbox update ends with (checks, reloads,
+                # stops services whose unit is gone, restarts every service)
+                if [ "$3" = all ]; then
+                    bash "$HOME/repo/scripts/restart-services.sh"
+                    exit
+                fi
+                check_service "$3"
+                # systemd only reads a changed .container file when it reloads, so a
+                # restart alone would start the old one. Check this service's unit first,
+                # so a mistake in it doesn't stop the running service.
+                systemd-analyze --user --generators=true verify "$3.service" ||
+                    { echo "$3's unit has errors; see the output above. Nothing was restarted."; exit 1; }
+                systemctl --user daemon-reload
+                systemctl --user restart "$3"
+                ;;
+            *)
+                cat <<'EOF'
+Usage: hearthbox services <command>
+
+  list                        every service of this host, and its state
+  status <service>            its state in detail, and its last log lines
+  logs <service> [options]    its logs; options go to journalctl (-f follows them)
+  restart <service>           restart it (all: every service)
+EOF
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        cat <<'EOF'
+Usage: hearthbox <command>
+
+  pull       get new versions of the repo, then apply them
+  update     apply ~/repo as it is, e.g. after you change it
+  services   list the services, show one's status or logs, or restart one
+EOF
+        exit 1
+        ;;
+esac

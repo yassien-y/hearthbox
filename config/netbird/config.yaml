@@ -1,0 +1,52 @@
+# NetBird's server (vpn/netbird-server.container): edit it here, then run hearthbox
+# update. NetBird can't read the internal and public domains from its environment, so
+# ${PUBLIC_DOMAIN} and ${INTERNAL_DOMAIN} are filled in at every start
+# (scripts/containers/render-netbird-config.sh). The secrets come from the unit instead,
+# as environment variables from Podman secrets: their fields below stay commented out, so
+# no secret is ever written to a file.
+server:
+  # Inside the container. Published as is, and public port 443 is redirected to it by
+  # Install's nftables rules: rootless, it can't have 443.
+  listenAddress: ":9443"
+  # The address devices connect to, and that the server gives them for its relay and
+  # signal. Port 443: what public traffic arrives on, before the redirect.
+  exposedAddress: "https://nbs.${PUBLIC_DOMAIN}:443"
+  # From NB_AUTH_SECRET (the netbird-relay-secret Podman secret), which overrides a
+  # value here. Don't set it here.
+  # authSecret:
+  # From NB_STORE_ENCRYPTION_KEY (the netbird-store-key Podman secret), which overrides a
+  # value here. Don't set it here.
+  # store:
+  #   encryptionKey:
+  # The server gets its certificate itself from Let's Encrypt, over port 443, and renews it
+  tls:
+    letsencrypt:
+      enabled: true
+      dataDir: "/var/lib/netbird/letsencrypt"
+      domains: ["nbs.${PUBLIC_DOMAIN}"]
+  auth:
+    # NetBird's own login, where devices sign in
+    issuer: "https://nbs.${PUBLIC_DOMAIN}/oauth2"
+    # From NB_IDP_SESSION_COOKIE_ENCRYPTION_KEY (the netbird-cookie-key Podman secret).
+    # Don't set it here: a value here would win over that variable.
+    # sessionCookieEncryptionKey:
+    # The NetBird app on a computer logs in through a browser, which hands the result
+    # back to the app here
+    cliRedirectURIs:
+      - "http://localhost:53000/"
+    # The dashboard (vpn/netbird-dashboard.container) is on its own address, behind
+    # nginx, so NetBird's login only sends a browser back there if it's listed: after
+    # logging in (nb-auth), when the dashboard renews its login unseen (nb-silent-auth),
+    # and after logging out
+    dashboardRedirectURIs:
+      - "https://netbird.${INTERNAL_DOMAIN}/nb-auth"
+      - "https://netbird.${INTERNAL_DOMAIN}/nb-silent-auth"
+    dashboardPostLogoutRedirectURIs:
+      - "https://netbird.${INTERNAL_DOMAIN}/"
+  # Nothing proxies in front of the server, so no client may tell it another client's
+  # address (X-Forwarded-For), which it trusts from every address by default. 192.0.2.1
+  # is a documentation address no connection ever comes from: trusted from nobody.
+  reverseProxy:
+    trustedPeers: ["192.0.2.1/32"]
+  # Usage statistics NetBird sends its developers by default: nothing leaves the server
+  disableAnonymousMetrics: true

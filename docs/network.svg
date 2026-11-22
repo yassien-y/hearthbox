@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1130 540" width="1130" height="540" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14">
+  <style>
+    .fg { fill: #24292f }
+    .muted { fill: #57606a }
+    .line { stroke: #57606a; stroke-width: 1.5; fill: none }
+    .group { stroke: #8c959f; stroke-width: 1.5; stroke-dasharray: 6 4; fill: none }
+    .net { stroke: #0969da; stroke-width: 1.5; stroke-dasharray: 6 4; fill: none }
+    .net-title { fill: #0969da }
+    .nft { stroke: #bc4c00; stroke-width: 1.5; fill: none }
+    .nft-title { fill: #bc4c00 }
+    .node { stroke: #8c959f; stroke-width: 1.5; fill: #f6f8fa }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px }
+    @media (prefers-color-scheme: dark) {
+      .fg { fill: #e6edf3 }
+      .muted { fill: #9198a1 }
+      .line { stroke: #9198a1 }
+      .group { stroke: #6e7681 }
+      .net { stroke: #4493f8 }
+      .net-title { fill: #4493f8 }
+      .nft { stroke: #f0883e }
+      .nft-title { fill: #f0883e }
+      .node { stroke: #6e7681; fill: #161b22 }
+    }
+  </style>
+
+  <!-- Local network -->
+  <rect class="net" x="10" y="10" width="1110" height="520" rx="10"/>
+  <text class="net-title" x="26" y="36" font-weight="600">Local network</text>
+
+  <!-- Server: the machine running the setup; the device is another machine -->
+  <rect class="group" x="170" y="46" width="940" height="468" rx="10"/>
+  <text class="fg" x="186" y="72" font-weight="600">Server</text>
+
+  <!-- nftables: every packet from the device passes it before reaching a container -->
+  <rect class="nft" x="200" y="86" width="80" height="412" rx="8"/>
+  <text class="nft-title" x="240" y="112" text-anchor="middle" font-weight="600">nftables</text>
+
+  <!-- Podman: CoreDNS on Podman's default network, and web.network -->
+  <rect class="group" x="300" y="86" width="796" height="412" rx="10"/>
+  <text class="fg" x="316" y="112" font-weight="600">Podman</text>
+
+  <!-- Podman network -->
+  <rect class="net" x="520" y="132" width="560" height="350" rx="10"/>
+  <text class="net-title" x="536" y="158" font-weight="600">Podman network (web.network)</text>
+
+  <!-- Lines, drawn first so the boxes sit on top -->
+  <path class="line" d="M150 192 H200 M280 192 H690"/>
+  <path class="line" d="M150 232 H200 M280 232 H390"/>
+  <path class="line" d="M740 214 C740 316 610 316 610 420 M740 214 C740 316 870 316 870 420"/>
+  <path class="line" d="M670 442 H810"/>
+
+  <!-- Line labels -->
+  <text class="muted mono" x="240" y="186" text-anchor="middle">80 → 8080</text>
+  <text class="muted mono" x="240" y="202" text-anchor="middle">443 → 8443</text>
+  <text class="muted mono" x="240" y="236" text-anchor="middle">53 → 1053</text>
+  <text class="muted" x="335" y="182" text-anchor="middle" font-size="12">published port</text>
+  <text class="muted" x="335" y="222" text-anchor="middle" font-size="12">published port</text>
+  <text class="muted mono" x="700" y="288" text-anchor="end">container-a:port</text>
+  <text class="muted mono" x="780" y="288">container-b:port</text>
+  <text class="muted mono" x="740" y="434" text-anchor="middle">container-b:port</text>
+
+  <!-- Nodes -->
+  <rect class="node" x="40" y="170" width="110" height="84" rx="6"/>
+  <text class="fg" x="95" y="217" text-anchor="middle">Device</text>
+
+  <!-- CoreDNS: the local network's DNS server. Outside web.network: it talks to no
+       container, so its unit names no network -->
+  <rect class="node" x="390" y="210" width="100" height="44" rx="6"/>
+  <text class="fg" x="440" y="237" text-anchor="middle">CoreDNS</text>
+
+  <rect class="node" x="690" y="170" width="100" height="44" rx="6"/>
+  <text class="fg" x="740" y="197" text-anchor="middle">nginx</text>
+
+  <rect class="node" x="550" y="420" width="120" height="44" rx="6"/>
+  <text class="fg" x="610" y="447" text-anchor="middle">container-a</text>
+
+  <rect class="node" x="810" y="420" width="120" height="44" rx="6"/>
+  <text class="fg" x="870" y="447" text-anchor="middle">container-b</text>
+
+  <!-- Podman DNS: used by every container, so on its own -->
+  <rect class="node" x="950" y="170" width="100" height="44" rx="6"/>
+  <text class="fg" x="1000" y="197" text-anchor="middle">Podman DNS</text>
+  <text class="muted" x="1000" y="234" text-anchor="middle" font-size="12">names to IPs,</text>
+  <text class="muted" x="1000" y="250" text-anchor="middle" font-size="12">for every container</text>
+</svg>

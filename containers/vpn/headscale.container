@@ -1,0 +1,37 @@
+[Unit]
+Description=Headscale: devices log in to it with the Tailscale app, and find each other through it, from anywhere
+
+[Container]
+# No minor-version tag before 1.0: the exact version
+Image=docker.io/headscale/headscale:0.29.7
+Exec=serve
+
+# The two settings that hold the public domain, from its environment: Headscale reads
+# HEADSCALE_<key> for any key of its config. The address devices connect to has no port:
+# the Tailscale app expects 443 in places, and the relay takes its port from it. Public
+# port 443 is redirected to listen_addr by Install's nftables rules. The other is the name
+# of its Let's Encrypt certificate.
+Environment=HEADSCALE_SERVER_URL=https://hs.${PUBLIC_DOMAIN}
+Environment=HEADSCALE_TLS_LETSENCRYPT_HOSTNAME=hs.${PUBLIC_DOMAIN}
+
+# Its own port (nftables redirects public port 443 here), and STUN for its relay, which
+# devices use to find their public address. The router opens 443 and 3478 to this host.
+PublishPort=9443:9443
+PublishPort=3478:3478/udp
+
+Volume=%h/repo/config/headscale/config.yaml:/etc/headscale/config.yaml:ro,Z
+# Its database (users, devices), its keys, its Let's Encrypt certificate, the socket the
+# headscale command talks to it through, and its DNS records (records/)
+Volume=%h/appdata/headscale:/var/lib/headscale:Z
+
+[Service]
+# Headscale won't start without its DNS records file, which headscale-records.sh only
+# writes once this machine has its address: an empty list until then
+ExecStartPre=/bin/sh -c 'mkdir -p %h/appdata/headscale/records && [ -e %h/appdata/headscale/records/extra-records.json ] || echo "[]" > %h/appdata/headscale/records/extra-records.json'
+# Writes the records now, and keeps them pointed at this machine's address for as long as
+# Headscale runs (scripts/containers/headscale-records.sh), in the background inside this
+# service: stopping or restarting Headscale stops it too, so there's always one. Its lines
+# are tagged headscale-records in Headscale's log (systemd-cat): hearthbox services logs
+# headscale shows them among Headscale's own, journalctl --user -t headscale-records shows
+# only them.
+ExecStartPost=/bin/sh -c 'systemd-cat -t headscale-records /bin/sh %h/repo/scripts/containers/headscale-records.sh &'

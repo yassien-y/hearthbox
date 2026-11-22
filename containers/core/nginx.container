@@ -1,0 +1,26 @@
+[Unit]
+Description=nginx reverse proxy
+
+[Container]
+Image=docker.io/nginxinc/nginx-unprivileged:1
+Network=web.network
+# 8080 HTTP, which only redirects to HTTPS (and serves the CA's root certificate),
+# 8443 HTTPS. Install's nftables rules send ports 80 and 443 here.
+PublishPort=8080:8080
+PublishPort=8443:8443
+
+Volume=%h/repo/config/nginx/conf.d:/etc/nginx/conf.d:ro,Z
+Volume=%h/repo/config/nginx/templates:/etc/nginx/templates:ro,Z
+# The services' certificate and the CA's root certificate, from renew-cert.sh (below)
+Volume=%h/appdata/nginx/certs:/certs:ro,Z
+
+# The image renders templates/ into conf.d by default, which is read-only (mounted above)
+Environment=NGINX_ENVSUBST_OUTPUT_DIR=/tmp
+# nginx's resolver is Podman's DNS server, which only the container knows: the image
+# reads it from the container's /etc/resolv.conf into NGINX_LOCAL_RESOLVERS
+Environment=NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+
+[Service]
+# Signs a new certificate when this one is missing, doesn't name every service, or is
+# about to expire
+ExecStartPre=/bin/sh %h/repo/scripts/containers/renew-cert.sh

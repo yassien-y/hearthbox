@@ -1,0 +1,12 @@
+- type: server-stats
+  servers:
+    - type: local
+      name: Server
+      hide-mountpoints-by-default: false
+      mountpoints:
+        "/":
+          name: System - /
+          hide: false
+        "/srv":
+          name: Public - /srv
+          hide: false

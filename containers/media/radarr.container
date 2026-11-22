@@ -1,0 +1,11 @@
+[Unit]
+Description=Radarr
+
+[Container]
+Image=lscr.io/linuxserver/radarr:version-6.4.4.10685
+Network=web.network
+# The port nginx's sites.conf and Glance use
+Environment=RADARR__SERVER__PORT=8092
+Volume=%h/appdata/radarr/config:/config:Z
+Volume=/srv/hearthbox:/data
+

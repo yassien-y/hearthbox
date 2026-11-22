@@ -1,0 +1,25 @@
+# Copy to containers/<group>/<service>.container (or containers/<service>.container
+# if it belongs to no group), fill in every <...>, and delete the
+# lines it doesn't need. See docs/development.md#adding-a-service.
+
+[Unit]
+Description=<Service description>
+
+[Container]
+# A major-version tag if the image publishes one, otherwise the exact version
+Image=<registry>/<image>:<tag>
+
+# nginx reaches it over web.network. Add one Network= line per other network it joins.
+Network=web.network
+
+# The port used for proxy server access
+Environment=<APP_PORT_SETTING>=<port>
+
+# What the app writes
+Volume=%h/appdata/<service>/config:/config:Z
+
+# Stored files that will be accessed publicly
+Volume=/srv/hearthbox:/data
+
+# Config files the app only reads, from the repo
+Volume=%h/repo/config/<service>/<folder>:/<path in container>:ro,Z

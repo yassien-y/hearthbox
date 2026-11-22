@@ -1,0 +1,36 @@
+[Unit]
+Description=NetBird server: devices log in to it, and find each other through it, from anywhere
+
+[Container]
+# No minor-version tag before 1.0: the exact version. Install's setup-netbird step
+# reads it from here, so the host's NetBird client is the same version.
+Image=docker.io/netbirdio/netbird-server:0.83.1
+
+# The server's own port (nftables redirects public port 443 here), and STUN, which
+# devices use to find their public address. The router opens 443 and 3478 to this host.
+PublishPort=9443:9443
+PublishPort=3478:3478/udp
+
+# Rendered from config/netbird/config.yaml at every start (below)
+Volume=%t/hearthbox/netbird.yaml:/etc/netbird/config.yaml:ro,Z
+# Its database (accounts, devices, DNS) and its Let's Encrypt certificate
+Volume=%h/appdata/netbird-server:/var/lib/netbird:Z
+
+# Signs the relay's credentials, encrypts the database's sensitive fields, and encrypts
+# login sessions. Created the first time (below). As environment variables, so no secret
+# is ever written to a file. NetBird's docs list the first two; the cookie key's variable
+# is only in its code (management/server/idp/embedded.go), checked to work in 0.83.1.
+# After an upgrade, check it's still read: if not, cookies are just no longer encrypted.
+Secret=netbird-relay-secret,type=env,target=NB_AUTH_SECRET
+Secret=netbird-store-key,type=env,target=NB_STORE_ENCRYPTION_KEY
+Secret=netbird-cookie-key,type=env,target=NB_IDP_SESSION_COOKIE_ENCRYPTION_KEY
+
+# Install creates the owner through the setup API and gets a token in the same call
+# (setup-netbird.sh). Once the owner exists, the setup API refuses every call.
+Environment=NB_SETUP_PAT_ENABLED=true
+
+[Service]
+ExecStartPre=/bin/sh %h/repo/scripts/containers/render-netbird-config.sh
+# The secrets, 32 random bytes in base64 (the format NetBird's keys need), created the
+# first time. Never replaced: the database stays encrypted with the key it started with.
+ExecStartPre=/bin/sh -c 'for name in netbird-relay-secret netbird-store-key netbird-cookie-key; do podman secret exists $name || head -c 32 /dev/urandom | base64 -w0 | podman secret create $name -; done'

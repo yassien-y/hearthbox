@@ -1,0 +1,11 @@
+[Unit]
+Description=Lidarr
+
+[Container]
+Image=lscr.io/linuxserver/lidarr:version-3.1.6.5079
+Network=web.network
+# The port nginx's sites.conf and Glance use
+Environment=LIDARR__SERVER__PORT=8091
+Volume=%h/appdata/lidarr/config:/config:Z
+Volume=/srv/hearthbox:/data
+

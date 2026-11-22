@@ -1,0 +1,25 @@
+[Unit]
+Description=Immich's database
+
+[Container]
+# Immich's own Postgres, with the vector extensions its search needs: the exact version
+# its compose file uses
+Image=ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+Network=immich.network
+# The database Immich connects to (its server's default, immich). The user stays
+# Postgres's default, postgres, which is also the server's.
+Environment=POSTGRES_DB=immich
+# Checksums on every page, so disk corruption is found instead of silently read
+Environment=POSTGRES_INITDB_ARGS=--data-checksums
+Secret=immich-db-password,type=env,target=POSTGRES_PASSWORD
+Volume=%h/appdata/immich/postgres:/var/lib/postgresql/data:Z
+# Podman's default, 64 MB, is too small for Postgres's parallel queries: Immich's
+# compose file sets 128 MB
+ShmSize=128m
+
+Label=glance.parent=immich
+
+[Service]
+# The database password, created the first time, before Postgres sets up the database
+# with it. Never replaced: the database keeps the password it was first set up with.
+ExecStartPre=/bin/sh -c 'podman secret exists immich-db-password || tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 | podman secret create immich-db-password -'

@@ -1,0 +1,11 @@
+[Unit]
+Description=Sonarr
+
+[Container]
+Image=lscr.io/linuxserver/sonarr:version-4.0.20.3014
+Network=web.network
+# The port nginx's sites.conf and Glance use
+Environment=SONARR__SERVER__PORT=8095
+Volume=%h/appdata/sonarr/config:/config:Z
+Volume=/srv/hearthbox:/data
+

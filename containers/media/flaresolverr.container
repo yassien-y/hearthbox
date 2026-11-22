@@ -1,0 +1,11 @@
+[Unit]
+Description=FlareSolverr
+
+[Container]
+Image=ghcr.io/flaresolverr/flaresolverr:v3.5.2
+Network=web.network
+Environment=PORT=8090
+
+#glance metadata
+Label=glance.parent=prowlarr
+

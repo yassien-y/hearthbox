@@ -1,0 +1,5 @@
+# Rendered by the image at every start into /tmp/resolver.conf, which sites.conf
+# includes (see core/nginx.container). NGINX_LOCAL_RESOLVERS is Podman's DNS server,
+# which resolves the container names. valid=10s: a restarted container's new address
+# is picked up within 10 seconds.
+resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;

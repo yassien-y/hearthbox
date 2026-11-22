@@ -1,0 +1,11 @@
+[Unit]
+Description=Immich's machine learning (faces, smart search)
+
+[Container]
+Image=ghcr.io/immich-app/immich-machine-learning:v3
+# Not internal-only: it downloads its models on first use
+Network=immich.network
+# The models it downloads, kept so they aren't downloaded again at every start
+Volume=%h/appdata/immich/model-cache:/cache:Z
+
+Label=glance.parent=immich

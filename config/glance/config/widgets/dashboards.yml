@@ -1,0 +1,48 @@
+# ${INTERNAL_DOMAIN} comes from ~/appdata/.env (core/glance.container)
+- type: monitor
+  title: Dashboards
+  sites:
+    - title: Ollama
+      url: https://ollama.${INTERNAL_DOMAIN}
+      check-url: http://ollama:8099/
+      icon: sh:ollama
+    - title: Immich
+      url: https://photos.${INTERNAL_DOMAIN}
+      check-url: http://immich:8098/api/server/ping
+      icon: sh:immich
+    - title: Jellyfin
+      url: https://jellyfin.${INTERNAL_DOMAIN}
+      check-url: http://jellyfin:8096/health
+      icon: sh:jellyfin
+    - title: Sonarr
+      url: https://sonarr.${INTERNAL_DOMAIN}
+      check-url: http://sonarr:8095/ping
+      icon: sh:sonarr
+    - title: Prowlarr
+      url: https://prowlarr.${INTERNAL_DOMAIN}
+      check-url: http://prowlarr:8094/ping
+      icon: sh:prowlarr
+    - title: qBittorrent
+      url: https://qbittorrent.${INTERNAL_DOMAIN}
+      check-url: http://qbittorrent:8093
+      icon: sh:qbittorrent
+    - title: Radarr
+      url: https://radarr.${INTERNAL_DOMAIN}
+      check-url: http://radarr:8092/ping
+      icon: sh:radarr
+    - title: Listenarr
+      url: https://listenarr.${INTERNAL_DOMAIN}
+      check-url: http://listenarr:8090/
+      icon: sh:listenarr
+    - title: Lidarr
+      url: https://lidarr.${INTERNAL_DOMAIN}
+      check-url: http://lidarr:8091/ping
+      icon: sh:lidarr
+    - title: SearXNG
+      url: https://search.${INTERNAL_DOMAIN}
+      check-url: http://searxng:8089/healthz
+      icon: sh:searxng
+    - title: NetBird
+      url: https://netbird.${INTERNAL_DOMAIN}
+      check-url: http://netbird-dashboard:8080/
+      icon: sh:netbird

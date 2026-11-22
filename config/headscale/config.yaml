@@ -1,0 +1,57 @@
+# Headscale (vpn/headscale.container): edit it here, then run hearthbox update. Its unit
+# sets the two settings that hold the public domain, server_url and
+# tls_letsencrypt_hostname, from its environment. Only settings that have no default, or
+# whose default doesn't fit, are here.
+
+# Inside the container, published as is: rootless, it can't have 443. No default.
+listen_addr: 0.0.0.0:9443
+
+noise:
+  # Its key for the protocol devices talk to it with, created at the first start. No
+  # default.
+  private_key_path: /var/lib/headscale/noise_private.key
+
+# Devices' addresses in its network. IPv4 only: the services' DNS records point at this
+# machine's IPv4 address, and nothing uses the IPv6 ones. No default.
+prefixes:
+  v4: 100.64.0.0/10
+
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+
+# Its relay, for devices that can't connect to each other directly, on this server. No
+# urls: Tailscale's relays aren't used, so nothing goes through a third party.
+derp:
+  server:
+    enabled: true
+    # Any ID but 0, which devices take as no relay. No default.
+    region_id: 999
+    # Its key, created at the first start. No default.
+    private_key_path: /var/lib/headscale/derp_server_private.key
+    # STUN, which devices use to find their public address: the port the router opens.
+    # No default.
+    stun_listen_addr: 0.0.0.0:3478
+
+# Its certificate for server_url, from Let's Encrypt (the name: its unit). TLS-ALPN-01
+# needs only port 443, which already reaches it; the default, HTTP-01, would need port 80
+# too.
+tls_letsencrypt_challenge_type: TLS-ALPN-01
+# With its other data: the default is outside the mounted folder
+tls_letsencrypt_cache_dir: /var/lib/headscale/cache
+
+# The socket the headscale command talks to it through, in the one folder the container's
+# user can write: the default is in /var/run
+unix_socket: /var/lib/headscale/headscale.sock
+
+dns:
+  # Off: devices find the services by the records below, not by device names, which
+  # would need a domain of their own
+  magic_dns: false
+  # Off: devices keep their own DNS servers for every other name. On, it needs servers to
+  # send every name to.
+  override_local_dns: false
+  # One record per service, which the Tailscale app answers itself. Written by
+  # scripts/containers/headscale-records.sh, and reloaded whenever it changes.
+  extra_records_path: /var/lib/headscale/records/extra-records.json

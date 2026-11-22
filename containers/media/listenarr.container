@@ -1,0 +1,13 @@
+[Unit]
+Description=Listenarr
+
+[Container]
+# Its port, which nginx's sites.conf and Glance use (ASP.NET's setting: it replaces the
+# image's default, 4545)
+Environment=ASPNETCORE_URLS=http://+:8090
+# Listenarr only publishes canary (pre-release) builds: no stable version to pin instead
+Image=ghcr.io/listenarrs/listenarr:canary-1.5.4
+Network=web.network
+Volume=%h/appdata/listenarr/config:/app/config:Z
+Volume=/srv/hearthbox:/data
+

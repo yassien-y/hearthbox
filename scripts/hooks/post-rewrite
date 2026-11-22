@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Runs after git pull --rebase, which doesn't run post-merge, so links that the pulled
+# changes add are in place. Skips "amend": it only rewrites a commit whose files are
+# already in place.
+[ "$1" = rebase ] || exit 0
+# On failure, stops with git's error instead of going on to a missing /scripts/link-repo.sh
+REPO="$(git rev-parse --show-toplevel)" || exit
+export REPO
+
+bash "$REPO/scripts/link-repo.sh"

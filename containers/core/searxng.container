@@ -1,0 +1,9 @@
+[Unit]
+Description=SearXNG
+
+[Container]
+Image=docker.io/searxng/searxng:2026.10.25-54ca1d9cf
+Network=web.network
+Environment=SEARXNG_PORT=8089
+Volume=%h/appdata/searxng/config:/etc/searxng:Z
+Volume=%h/appdata/searxng/cache:/var/cache/searxng:Z

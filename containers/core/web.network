@@ -1,0 +1,5 @@
+[Network]
+NetworkName=web
+# No subnet: Podman picks a free one when it creates the network, so it never clashes
+# with another Podman network, and nothing else needs its address (nginx reads its
+# resolver from the container)

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Runs after every git pull (merge), so links that the pulled changes add are in place.
+# It doesn't restart anything: run hearthbox update for that.
+# Git uses this folder because Install sets core.hooksPath in the user's clone.
+# On failure, stops with git's error instead of going on to a missing /scripts/link-repo.sh
+REPO="$(git rev-parse --show-toplevel)" || exit
+export REPO
+
+bash "$REPO/scripts/link-repo.sh"

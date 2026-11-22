@@ -1,0 +1,13 @@
+[Unit]
+Description=Prowlarr
+
+[Container]
+Image=lscr.io/linuxserver/prowlarr:version-2.6.5.5623
+Network=web.network
+# The port nginx's sites.conf and Glance use
+Environment=PROWLARR__SERVER__PORT=8094
+Volume=%h/appdata/prowlarr/config:/config:Z
+
+#glance metadata
+Label=glance.id=prowlarr
+
